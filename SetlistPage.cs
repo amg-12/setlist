@@ -1,0 +1,1 @@
+﻿public record class SetlistPage(int total, List<Setlist> setlist);

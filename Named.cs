@@ -1,0 +1,1 @@
+﻿public record class Named(string name);
