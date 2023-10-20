@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
 
 using HttpClient client = new();
@@ -9,18 +8,22 @@ client.DefaultRequestHeaders.Accept.Add(
 client.DefaultRequestHeaders.Add("x-api-key", Secret.key);
 const string setlistUrl = "https://api.setlist.fm/rest/1.0/user/";
 
-var hi = await compareUsers(client, "Amitai", "harrymgaze");
+var hi = await compareUsers(client, "judetheobscure", "saradactyl");
 hi.ForEach(x => Console.WriteLine(x));
 
 
 static async Task<SetlistPage> getPage(HttpClient client, string user, int p)
 {
-    await using Stream stream =
-    await client.GetStreamAsync(setlistUrl + user + "/attended?p=" + p.ToString());
-    var page =
-        await JsonSerializer.DeserializeAsync<SetlistPage>(stream);
+    HttpResponseMessage? response = null;
 
-    return page;
+    do
+    {
+        response = await client.GetAsync(setlistUrl + user + "/attended?p=" + p.ToString());
+        await Console.Out.WriteLineAsync(response.StatusCode.ToString());
+    } while (!response.IsSuccessStatusCode);
+
+    Stream stream = await response.Content.ReadAsStreamAsync();
+    return await JsonSerializer.DeserializeAsync<SetlistPage>(stream);
 }
 
 static async Task<List<Setlist>> getAllSetlists(HttpClient client, string user)
@@ -33,7 +36,7 @@ static async Task<List<Setlist>> getAllSetlists(HttpClient client, string user)
         SetlistPage page = await getPage(client, user, p);
         total = page.total;
         setlists.AddRange(page.setlist);
-        Thread.Sleep(550);
+        //Thread.Sleep(550);
     }
 
     return setlists;
