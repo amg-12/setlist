@@ -1,51 +1,31 @@
-﻿using System.Net.Http.Headers;
-using System.Text.Json;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using slfm.Data;
 
-using HttpClient client = new();
-client.DefaultRequestHeaders.Accept.Clear();
-client.DefaultRequestHeaders.Accept.Add(
-    new MediaTypeWithQualityHeaderValue("application/json"));
-client.DefaultRequestHeaders.Add("x-api-key", Secret.key);
-const string setlistUrl = "https://api.setlist.fm/rest/1.0/user/";
+var builder = WebApplication.CreateBuilder(args);
 
-var hi = await compareUsers(client, "judetheobscure", "saradactyl");
-hi.ForEach(x => Console.WriteLine(x));
+// Add services to the container.
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddSingleton<WeatherForecastService>();
 
+var app = builder.Build();
 
-static async Task<SetlistPage> getPage(HttpClient client, string user, int p)
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    HttpResponseMessage? response = null;
-
-    do
-    {
-        response = await client.GetAsync(setlistUrl + user + "/attended?p=" + p.ToString());
-        await Console.Out.WriteLineAsync(response.StatusCode.ToString());
-    } while (!response.IsSuccessStatusCode);
-
-    Stream stream = await response.Content.ReadAsStreamAsync();
-    return await JsonSerializer.DeserializeAsync<SetlistPage>(stream);
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
-static async Task<List<Setlist>> getAllSetlists(HttpClient client, string user)
-{
-    List<Setlist> setlists = new List<Setlist>();
-    int total = 1;
+app.UseHttpsRedirection();
 
-    for(int p=1; setlists.Count < total; p++)
-    {
-        SetlistPage page = await getPage(client, user, p);
-        total = page.total;
-        setlists.AddRange(page.setlist);
-        //Thread.Sleep(550);
-    }
+app.UseStaticFiles();
 
-    return setlists;
-}
+app.UseRouting();
 
-static async Task<List<Setlist>> compareUsers(HttpClient client, string user1, string user2)
-{
-    List<Setlist> sets1 = await getAllSetlists(client, user1);
-    List<Setlist> sets2 = await getAllSetlists(client, user2);
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
 
-    return sets1.Intersect(sets2).ToList();
-}
+app.Run();

@@ -1,0 +1,26 @@
+﻿@page "/setlist"
+
+<h3>Setlist</h3>
+
+@if (sets == null)
+{
+    <p>retrieving...</p>
+}
+else
+{
+<ul>
+    @foreach (var set in sets)
+    {
+        <li>@set</li>
+    }
+</ul>
+}
+
+@code {
+    List<Setlist>? sets = null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        sets = await api.getAllSetlists("amitai");
+    }
+}
