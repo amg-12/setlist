@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Linq;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 public class api
@@ -25,6 +26,12 @@ public class api
         {
             response = await client.GetAsync(setlistUrl + user + "/attended?p=" + p.ToString());
             await Console.Out.WriteLineAsync(response.StatusCode.ToString());
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new SetlistPage(0, new List<Setlist>());
+            }
+
         } while (!response.IsSuccessStatusCode);
 
         Stream stream = await response.Content.ReadAsStreamAsync();
@@ -47,11 +54,13 @@ public class api
         return setlists;
     }
 
-    static async Task<List<Setlist>> compareUsers(HttpClient client, string user1, string user2)
+    public static List<Setlist> compare(List<Setlist> sets1, List<Setlist> sets2)
     {
-        List<Setlist> sets1 = await getAllSetlists(user1);
-        List<Setlist> sets2 = await getAllSetlists(user2);
-
         return sets1.Intersect(sets2).ToList();
+    }
+
+    public static List<String> compareArtists(List<Setlist> sets1, List<Setlist> sets2)
+    {
+        return sets1.Where(x => sets2.Exists(y => x.artist == y.artist)).Select(z => z.artist.name).Distinct().ToList();
     }
 }

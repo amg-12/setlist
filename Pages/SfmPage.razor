@@ -2,25 +2,64 @@
 
 <h3>Setlist</h3>
 
-@if (sets == null)
-{
-    <p>retrieving...</p>
-}
-else
-{
-<ul>
-    @foreach (var set in sets)
+<input placeholder="setlist.fm username" @bind="user1" />
+<input placeholder="setlist.fm username" @bind="user2" />
+<button @onclick="Retrieve">Load</button>
+<br />
+<br />
+
+@{
+    switch(status)
     {
-        <li>@set</li>
+        case Status.Start:
+            <p>enter two different setlist.fm usernames</p>
+            break;
+        case Status.Retrieving:
+            <p>retrieving...</p>
+            break;
+        case Status.Done:
+            <h5>@user1 and @user2 attended these concerts:</h5>
+            <ul>
+                @foreach (var set in api.compare(sets1, sets2))
+                {
+                    <li>@set</li>
+                }
+            </ul>
+            <h5>and seen these artists:</h5>
+            <ul>
+                @foreach (var artist in api.compareArtists(sets1, sets2))
+                {
+                    <li>@artist</li>
+                }
+            </ul>
+            break;
+        default:
+            break;
     }
-</ul>
 }
 
 @code {
-    List<Setlist>? sets = null;
-
-    protected override async Task OnParametersSetAsync()
+    enum Status
     {
-        sets = await api.getAllSetlists("amitai");
+        Start,
+        Retrieving,
+        Done
     }
+
+    Status status = Status.Start;
+    private string user1 = "Amitai";
+    private string user2 = "Amitai";
+    private List<Setlist> sets1 = new();
+    private List<Setlist> sets2 = new();
+
+
+    protected async Task Retrieve()
+    {
+        status = Status.Retrieving;
+        sets1 = await api.getAllSetlists(user1);
+        sets2 = await api.getAllSetlists(user2);
+        status = Status.Done;
+    }
+
+
 }
