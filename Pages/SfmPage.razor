@@ -26,12 +26,37 @@
                 }
             </ul>
             <h5>and seen these artists:</h5>
-            <ul>
-                @foreach (var artist in api.compareArtists(sets1, sets2))
+            <table>
+                <tr>
+                    <th />
+                    <th>@user1</th>
+                    <th>@user2</th>
+                </tr>
+                @foreach (var c in api.compareArtists(sets1, sets2))
                 {
-                    <li>@artist</li>
+                    <tr>
+                        <th>@c.name</th>
+                        <th>@c.count1</th>
+                        <th>@c.count2</th>
+                    </tr>
                 }
-            </ul>
+            </table>
+            <h5>and visited these venues:</h5>
+            <table>
+                <tr>
+                    <th />
+                    <th>@user1</th>
+                    <th>@user2</th>
+                </tr>
+                @foreach (var c in api.compareVenues(sets1, sets2))
+                {
+                    <tr>
+                        <th>@c.name</th>
+                        <th>@c.count1</th>
+                        <th>@c.count2</th>
+                    </tr>
+                }
+            </table>
             break;
         default:
             break;

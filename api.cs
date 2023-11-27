@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using slfm;
 
 public class api
 {
@@ -59,8 +60,34 @@ public class api
         return sets1.Intersect(sets2).ToList();
     }
 
-    public static List<String> compareArtists(List<Setlist> sets1, List<Setlist> sets2)
+    public static List<Comp> compareArtists(List<Setlist> sets1, List<Setlist> sets2)
     {
-        return sets1.Where(x => sets2.Exists(y => x.artist == y.artist)).Select(z => z.artist.name).Distinct().ToList();
+        List<Comp> results = new();
+
+        foreach (String name in sets1.Select(x => x.artist.name).Distinct().ToList())
+        {
+            if (sets2.Exists(x => x.artist.name == name))
+            {
+                results.Add(new Comp(name, sets1.Count(x => x.artist.name == name), sets2.Count(x => x.artist.name == name)));
+            }
+        }
+
+        return results.OrderBy(x => -x.min()).ThenBy(x => -x.max()).ToList();
     }
+
+    public static List<Comp> compareVenues(List<Setlist> sets1, List<Setlist> sets2)
+    {
+        List<Comp> results = new();
+
+        foreach (String name in sets1.Select(x => x.venue.name).Distinct().ToList())
+        {
+            if (sets2.Exists(x => x.venue.name == name))
+            {
+                results.Add(new Comp(name, sets1.Count(x => x.venue.name == name), sets2.Count(x => x.venue.name == name)));
+            }
+        }
+
+        return results.OrderBy(x => -x.min()).ThenBy(x => -x.max()).ToList();
+    }
+
 }
